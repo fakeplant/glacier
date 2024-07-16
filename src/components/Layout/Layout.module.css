@@ -1,0 +1,31 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: 0fr auto;
+  grid-template-rows: 1fr;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--mantine-color-default-border);
+  z-index: 10;
+}
+
+.wrapper.open {
+  grid-template-columns: 300px auto;
+}
+
+.wrapper.open > div:first-child {
+  border-right: 1px solid var(--mantine-color-default-border);
+}
+
+.menu {
+  position: absolute;
+  top: var(--mantine-spacing-lg);
+  left: var(--mantine-spacing-lg);
+  z-index: 20;
+}
+
+.icon {
+  position: absolute;
+  top: var(--mantine-spacing-lg);
+  right: var(--mantine-spacing-lg);
+}
