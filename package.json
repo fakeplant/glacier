@@ -7,23 +7,26 @@
     "node": "18.x"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "fixtures:pull": "eval $(grep '^FIXTURES_PATH' .env.local) && npx ts-node scripts/pull-fixtures.ts"
   },
   "dependencies": {
-    "@mantine/core": "^7.7.1",
-    "@mantine/form": "^7.7.1",
-    "@mantine/hooks": "^7.7.1",
-    "@mantine/notifications": "^7.7.1",
+    "@mantine/core": "^8.0.2",
+    "@mantine/form": "^8.0.2",
+    "@mantine/hooks": "^8.0.2",
+    "@mantine/notifications": "^8.0.2",
     "@react-three/drei": "^9.105.3",
     "@react-three/fiber": "^8.16.1",
     "@tabler/icons-react": "^3.1.0",
+    "@tanstack/react-router": "^1.58.3",
+    "@tanstack/router-plugin": "^1.120.15",
     "clsx": "^2.1.1",
     "csv-loader": "^3.0.5",
+    "dotenv": "^16.4.5",
     "leva": "^0.9.35",
-    "next": "14.1.4",
     "papaparse": "^5.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -32,16 +35,25 @@
     "three": "^0.163.0"
   },
   "devDependencies": {
+    "@tanstack/router-cli": "^1.58.3",
+    "@tanstack/router-devtools": "^1.58.3",
+    "@types/eslint": "^8.56.10",
     "@types/node": "20.12.6",
     "@types/papaparse": "^5.3.14",
     "@types/react": "18.2.75",
     "@types/react-dom": "18.2.24",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.1.4",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
     "postcss": "^8.4.38",
-    "postcss-preset-mantine": "1.13.0",
+    "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "^3.2.5",
-    "typescript": "5.4.4"
+    "ts-node": "^10.9.2",
+    "typescript": "5.4.4",
+    "vite": "^5.2.0"
   }
 }

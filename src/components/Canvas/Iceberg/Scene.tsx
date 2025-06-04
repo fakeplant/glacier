@@ -52,34 +52,20 @@ function Scene() {
   console.log("edges", edges)
 
   useEffect(() => {
-    Papa.parse(edges, {
-      download: true,
-      header: true,
-      complete: (result) => {
-        setEdgeData(result.data)
-        // @ts-ignore
-        const map = new Map(result.data.map((edge) => [edge.ID, edge]))
-        console.log("map")
-        console.log(map)
-        // @ts-ignore
-        setEdgeMap(map)
-
-        Papa.parse(vertices, {
-          download: true,
-          header: true,
-          complete: (result) => {
-            setVerticesData(result.data)
-            // @ts-ignore
-            const map = new Map(
-              // @ts-ignore
-              result.data.map((vertex) => [vertex.ID, vertex])
-            )
-            // @ts-ignore
-            setVerticesMap(map)
-          },
-        })
-      },
-    })
+    // CSV data is already parsed in Vite
+    setEdgeData(edges)
+    // @ts-ignore
+    const edgeMap = new Map(edges.map((edge) => [edge.ID, edge]))
+    console.log("map")
+    console.log(edgeMap)
+    // @ts-ignore
+    setEdgeMap(edgeMap)
+    
+    setVerticesData(vertices)
+    // @ts-ignore
+    const vertexMap = new Map(vertices.map((vertex) => [vertex.ID, vertex]))
+    // @ts-ignore
+    setVerticesMap(vertexMap)
   }, [])
 
   return (

@@ -1,13 +1,4 @@
-"use client"
-
 import { createTheme, rem, rgba } from "@mantine/core"
-import { Mukta_Malar } from "next/font/google"
-
-const font = Mukta_Malar({
-  subsets: ["latin"],
-  // weight: ["300", "400", "500", "600", "700"],
-  weight: ["400"],
-})
 
 export const theme = createTheme({
   // Colors
@@ -24,12 +15,12 @@ export const theme = createTheme({
     xxs: "calc(0.225rem*var(--mantine-scale))",
   },
 
-  fontFamily: font.style.fontFamily,
+  fontFamily: 'Mukta Malar, sans-serif',
 
   /* Put your mantine theme override here */
   headings: {
     fontWeight: "700",
-    fontFamily: font.style.fontFamily,
+    fontFamily: 'Mukta Malar, sans-serif',
     // lineHeight: "1.4",
 
     // properties for individual headings, all of them are optional

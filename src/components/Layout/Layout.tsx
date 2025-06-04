@@ -1,6 +1,10 @@
-"use client"
-
-import { ActionIcon, Box, Burger, Text, useMantineTheme } from "@mantine/core"
+import {
+  ActionIcon,
+  Box,
+  Burger,
+  Text,
+  useMantineTheme,
+} from "@mantine/core"
 import classes from "./Layout.module.css"
 import Menu from "../Menu/Menu"
 import { useState } from "react"

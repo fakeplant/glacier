@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Box,
   rem,
@@ -10,11 +8,10 @@ import {
 } from "@mantine/core"
 import classes from "./Menu.module.css"
 import cx from "clsx"
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { IconChartAreaLine, IconCircleHalfVertical } from "@tabler/icons-react"
 import { Car } from "../../lib/types"
-import { usePathname } from "next/navigation"
-import { useRouter } from "next/navigation"
+import { useNavigate, useLocation } from "@tanstack/react-router"
 
 // -------------------------------------------------- //
 // Props
@@ -41,11 +38,11 @@ export function Menu(props: MenuProps) {
   const [car, setCar] = useState<Car>(Car.Iceberg)
 
   // Router
-  const router = useRouter()
-  const pathname = usePathname()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    if (pathname === "/mothership") {
+    if (location.pathname === "/mothership") {
       setCar(Car.Mothership)
     } else {
       setCar(Car.Iceberg)
@@ -53,7 +50,7 @@ export function Menu(props: MenuProps) {
   })
 
   const setCarRoute = (car: Car) => {
-    router.push(`/${car.toLowerCase()}`)
+    navigate({ to: `/${car.toLowerCase()}` })
   }
 
   return (
