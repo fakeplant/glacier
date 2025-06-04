@@ -31,12 +31,10 @@ export function Menu(props: MenuProps) {
 
   // Fixture store
   const {
-    selectedFixture,
     selectedTags,
     showLabels,
     availableTags,
     fixtureCategories,
-    setSelectedFixture,
     setSelectedTags,
     setShowLabels,
     clearFilters,
@@ -122,9 +120,15 @@ export function Menu(props: MenuProps) {
               {fixtureCategories.map((category) => (
                 <Button
                   key={category}
-                  variant={selectedFixture === category ? "filled" : "light"}
+                  variant={selectedTags.includes(category) ? "filled" : "light"}
                   size="xs"
-                  onClick={() => setSelectedFixture(selectedFixture === category ? undefined : category)}
+                  onClick={() => {
+                    if (selectedTags.includes(category)) {
+                      setSelectedTags(selectedTags.filter(tag => tag !== category))
+                    } else {
+                      setSelectedTags([...selectedTags, category])
+                    }
+                  }}
                 >
                   {category.toUpperCase()}
                 </Button>

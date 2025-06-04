@@ -561,13 +561,21 @@ export class FixtureLoader {
     return topLevel
   }
 
-  // Filter fixtures by tags
+  // Filter fixtures by tags - includes fixtures if they or any descendants have matching tags
   filterByTags(fixtures: ParsedFixture[], tags: string[]): ParsedFixture[] {
     if (tags.length === 0) return fixtures
 
-    return fixtures.filter((fixture) =>
-      tags.some((tag) => fixture.tags.includes(tag))
-    )
+    const hasMatchingTags = (fixture: ParsedFixture): boolean => {
+      // Check if this fixture has matching tags
+      if (tags.some((tag) => fixture.tags.includes(tag))) {
+        return true
+      }
+      
+      // Check if any children have matching tags
+      return fixture.children.some((child) => hasMatchingTags(child))
+    }
+
+    return fixtures.filter(hasMatchingTags)
   }
 
   // Get all unique tags from fixtures

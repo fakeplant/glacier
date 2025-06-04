@@ -7,13 +7,13 @@ import { useFixtureStore } from '../../../hooks/useFixtureStore'
 
 function Scene() {
   const {
-    selectedFixture,
     selectedTags,
     showLabels,
     teFixture,
     loading,
     error,
-    handleFixtureSelect
+    handleFixtureSelect,
+    handleCanvasClick
   } = useFixtureStore()
   
   const highlightedGroupRef = useRef<Group>(null)
@@ -58,21 +58,8 @@ function Scene() {
     )
   }
 
-  // Filter fixtures by tags if any are selected
-  const filteredFixtures = selectedTags.length > 0 
-    ? fixtureLoader.filterByTags([teFixture], [...selectedTags])
-    : [teFixture]
-
-  // Separate highlighted and normal fixtures for selective bounds
-  const isHighlighted = (fixture: any) => {
-    if (!selectedFixture) return false
-    return fixture.definition.components?.some((comp: any) => 
-      comp.type.startsWith(selectedFixture + '/')
-    ) || false
-  }
-
-  const highlightedFixtures = filteredFixtures.filter(isHighlighted)
-  const normalFixtures = filteredFixtures.filter(f => !isHighlighted(f))
+  // Use all fixtures - filtering happens at render level
+  const allFixtures = [teFixture]
 
   return (
     <>
@@ -93,30 +80,17 @@ function Scene() {
       />
       
       <Bounds fit clip observe margin={1.2}>
-        <group>
-          {/* Normal fixtures */}
-          {normalFixtures.map((fixture, index) => (
+        <group onClick={handleCanvasClick}>
+          {/* All fixtures */}
+          {allFixtures.map((fixture, index) => (
             <FixtureRenderer
-              key={`normal-${fixture.label}-${index}`}
+              key={`${fixture.label}-${index}`}
               fixture={fixture}
-              highlighted={false}
               showLabels={showLabels}
+              selectedTags={[...selectedTags]}
               onSelect={handleFixtureSelect}
             />
           ))}
-          
-          {/* Highlighted fixtures group for bounds targeting */}
-          <group ref={highlightedGroupRef}>
-            {highlightedFixtures.map((fixture, index) => (
-              <FixtureRenderer
-                key={`highlighted-${fixture.label}-${index}`}
-                fixture={fixture}
-                highlighted={true}
-                showLabels={showLabels}
-                onSelect={handleFixtureSelect}
-              />
-            ))}
-          </group>
         </group>
       </Bounds>
     </>

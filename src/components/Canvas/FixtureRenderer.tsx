@@ -1,17 +1,19 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useFrame, ThreeEvent } from '@react-three/fiber'
-import { Text, Bounds } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { ParsedFixture } from '../../lib/fixtures'
 
 interface FixtureRendererProps {
   fixture: ParsedFixture
-  highlighted?: boolean
   showLabels?: boolean
+  showMeta?: boolean
+  depth?: number
+  selectedTags?: string[]
   onSelect?: (fixture: ParsedFixture) => void
 }
 
-function FixtureRenderer({ fixture, highlighted = false, showLabels = false, onSelect }: FixtureRendererProps) {
+function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags = [], onSelect }: FixtureRendererProps) {
   const pointsRef = useRef<THREE.Points>(null)
   const [hovered, setHovered] = useState(false)
   
@@ -55,28 +57,26 @@ function FixtureRenderer({ fixture, highlighted = false, showLabels = false, onS
   // Material colors
   const pointMaterial = useMemo(() => {
     let color = '#00ff00'
-    if (highlighted) color = '#ffff00'
-    else if (hovered) color = '#ff8800'
+    if (hovered) color = '#ff8800'
     
     return new THREE.PointsMaterial({ 
       color, 
-      size: highlighted ? 3 : 2, 
+      size: 2, 
       sizeAttenuation: false 
     })
-  }, [highlighted, hovered])
+  }, [hovered])
 
   const boxMaterial = useMemo(() => {
     let color = '#ffffff'
-    if (highlighted) color = '#ffff00'
-    else if (hovered) color = '#ff8800'
+    if (hovered) color = '#ff8800'
     
     return new THREE.MeshBasicMaterial({ 
       color, 
       wireframe: true,
       transparent: true,
-      opacity: highlighted ? 0.8 : 0.3
+      opacity: 0.3
     })
-  }, [highlighted, hovered])
+  }, [hovered])
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
@@ -94,42 +94,58 @@ function FixtureRenderer({ fixture, highlighted = false, showLabels = false, onS
     return [center.x, center.y + size.y / 2 + 2, center.z] as [number, number, number]
   }, [boundingBox])
 
+  // Check if this fixture should show points based on tag filtering
+  const shouldShowPoints = useMemo(() => {
+    if (selectedTags.length === 0) return true
+
+    // Only check if this fixture itself has matching tags
+    return selectedTags.some((tag) => fixture.tags.includes(tag))
+  }, [fixture.tags, selectedTags])
+
+
+  // Check if we should allow meta labeling
+  const shouldShowMeta = depth === 1
+
   return (
     <group>
       {/* Points */}
-      {fixture.points.length > 0 && (
+      {shouldShowPoints && fixture.points.length > 0 && (
         <points
           ref={pointsRef}
           geometry={geometry}
           material={pointMaterial}
-          onClick={handleClick}
+          onClick={shouldShowMeta && handleClick}
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => setHovered(false)}
         />
       )}
       
       {/* Bounding box */}
-      {boundingBoxGeometry && (
+      {shouldShowPoints && shouldShowMeta && boundingBoxGeometry && (
         <mesh
           geometry={boundingBoxGeometry}
           material={boxMaterial}
-          onClick={handleClick}
+          onClick={shouldShowMeta && handleClick}
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => setHovered(false)}
         />
       )}
       
       {/* Label */}
-      {showLabels && (
-        <Text
-          position={labelPosition}
-          fontSize={1}
-          color={highlighted ? '#ffff00' : '#ffffff'}
-          anchorX="center"
-          anchorY="bottom"
-        >
-          {fixture.label}
-        </Text>
+      {shouldShowPoints && shouldShowMeta && showLabels && (
+        <Html position={labelPosition} center>
+          <div style={{
+            color:  '#ffffff',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+            textWrap: 'nowrap',
+          }}>
+            {fixture.label}
+          </div>
+        </Html>
       )}
       
       {/* Render children */}
@@ -137,9 +153,10 @@ function FixtureRenderer({ fixture, highlighted = false, showLabels = false, onS
         <FixtureRenderer
           key={`${child.label}-${index}`}
           fixture={child}
-          highlighted={highlighted}
           showLabels={showLabels}
+          selectedTags={selectedTags}
           onSelect={onSelect}
+          depth={depth + 1}
         />
       ))}
     </group>

@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@tanstack/router-cli": "^1.58.3",
-    "@tanstack/router-devtools": "^1.58.3",
+    "@tanstack/react-router-devtools": "^1.120.15",
     "@types/eslint": "^8.56.10",
     "@types/node": "20.12.6",
     "@types/papaparse": "^5.3.14",

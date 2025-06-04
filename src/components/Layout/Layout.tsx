@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Box,
   Burger,
+  Paper,
   Text,
   useMantineTheme,
 } from "@mantine/core"
@@ -33,18 +34,25 @@ export function Layout(props: LayoutProps) {
   return (
     <>
       <Box className={classes.menu}>
-        <ActionIcon
-          onClick={() => setOpen(!open)}
+        <Paper
           radius="xl"
-          size="xl"
-          variant="default"
+          p="xs"
+          withBorder
+          w="44px"
+          h="44px"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Burger
+            onClick={() => setOpen(!open)}
             opened={open}
             aria-label="Toggle navigation"
             size="sm"
           />
-        </ActionIcon>
+        </Paper>
       </Box>
       <Box className={cx(classes.wrapper, open && classes.open)}>
         <Menu />
