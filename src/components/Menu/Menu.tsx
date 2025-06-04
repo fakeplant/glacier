@@ -16,6 +16,7 @@ import { IconChartAreaLine, IconCircleHalfVertical, IconTag } from "@tabler/icon
 import { Car } from "../../lib/types"
 import { useNavigate, useLocation } from "@tanstack/react-router"
 import { useFixtureStore } from "../../hooks/useFixtureStore"
+import FixtureTree from "./FixtureTree"
 
 // -------------------------------------------------- //
 // Props
@@ -31,12 +32,15 @@ export function Menu(props: MenuProps) {
 
   // Fixture store
   const {
+    selectedTopLevelFixture,
     selectedTags,
     showLabels,
+    hideUnhighlighted,
     availableTags,
-    fixtureCategories,
+    setSelectedTopLevelFixture,
     setSelectedTags,
     setShowLabels,
+    setHideUnhighlighted,
     clearFilters,
   } = useFixtureStore()
 
@@ -47,47 +51,46 @@ export function Menu(props: MenuProps) {
     stroke: 1.5,
   }
 
-  // Control
-  const [car, setCar] = useState<Car>(Car.Iceberg)
-
   // Router
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Sync URL with store
   useEffect(() => {
     if (location.pathname === "/mothership") {
-      setCar(Car.Mothership)
+      setSelectedTopLevelFixture('Mothership')
     } else {
-      setCar(Car.Iceberg)
+      setSelectedTopLevelFixture('TE')
     }
-  })
+  }, [location.pathname, setSelectedTopLevelFixture])
 
-  const setCarRoute = (car: Car) => {
-    navigate({ to: `/${car.toLowerCase()}` })
+  const setCarRoute = (value: string) => {
+    const route = value === 'Mothership' ? '/mothership' : '/iceberg'
+    navigate({ to: route })
   }
 
   return (
     <Box className={classes.wrapper}>
       <Stack className={classes.select} justify="center" align="end" w="100%">
         <SegmentedControl
-          value={car}
-          onChange={(value) => setCarRoute(value as Car)}
+          value={selectedTopLevelFixture === 'TE' ? 'Iceberg' : 'Mothership'}
+          onChange={(value) => setCarRoute(value)}
           data={[
             {
-              value: Car.Iceberg,
+              value: 'Iceberg',
               label: (
                 <>
                   <IconChartAreaLine {...iconProps} />
-                  <VisuallyHidden>{Car.Iceberg}</VisuallyHidden>
+                  <VisuallyHidden>Iceberg</VisuallyHidden>
                 </>
               ),
             },
             {
-              value: Car.Mothership,
+              value: 'Mothership',
               label: (
                 <>
                   <IconCircleHalfVertical {...iconProps} />
-                  <VisuallyHidden>{Car.Mothership}</VisuallyHidden>
+                  <VisuallyHidden>Mothership</VisuallyHidden>
                 </>
               ),
             },
@@ -96,43 +99,23 @@ export function Menu(props: MenuProps) {
         />
       </Stack>
 
-      {car === Car.Iceberg && (
-        <Stack className={classes.stack} gap="md" p="md">
-          <Divider />
-          
+      <Stack className={classes.stack} gap="md" p="md">          
           {/* View Controls */}
           <Box>
             <Text size="sm" fw={600} mb="xs">View Controls</Text>
-            <Switch
-              label="Show Labels"
-              checked={showLabels}
-              onChange={(event) => setShowLabels(event.currentTarget.checked)}
-              size="sm"
-            />
-          </Box>
-
-          <Divider />
-
-          {/* Fixture Categories */}
-          <Box>
-            <Text size="sm" fw={600} mb="xs">Fixture Categories</Text>
             <Stack gap="xs">
-              {fixtureCategories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedTags.includes(category) ? "filled" : "light"}
-                  size="xs"
-                  onClick={() => {
-                    if (selectedTags.includes(category)) {
-                      setSelectedTags(selectedTags.filter(tag => tag !== category))
-                    } else {
-                      setSelectedTags([...selectedTags, category])
-                    }
-                  }}
-                >
-                  {category.toUpperCase()}
-                </Button>
-              ))}
+              <Switch
+                label="Show Labels"
+                checked={showLabels}
+                onChange={(event) => setShowLabels(event.currentTarget.checked)}
+                size="sm"
+              />
+              <Switch
+                label="Hide Unhighlighted"
+                checked={hideUnhighlighted}
+                onChange={(event) => setHideUnhighlighted(event.currentTarget.checked)}
+                size="sm"
+              />
             </Stack>
           </Box>
 
@@ -170,8 +153,19 @@ export function Menu(props: MenuProps) {
               </Button>
             </Box>
           )}
+          
+          <Divider />
+
+          {/* Fixture Tree */}
+          <Box>
+            <Text size="sm" fw={600} mb="xs">Fixture Selection</Text>
+            {/* <FixtureTree /> */}
+          </Box>
+
+          <Divider />
+
+          
         </Stack>
-      )}
     </Box>
   )
 }

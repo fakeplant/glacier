@@ -6,14 +6,27 @@ import { ParsedFixture } from '../../lib/fixtures'
 
 interface FixtureRendererProps {
   fixture: ParsedFixture
+  highlighted?: boolean
   showLabels?: boolean
   showMeta?: boolean
+  hideUnhighlighted?: boolean
   depth?: number
   selectedTags?: string[]
+  selectedFixtures?: ParsedFixture[]
   onSelect?: (fixture: ParsedFixture) => void
 }
 
-function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags = [], onSelect }: FixtureRendererProps) {
+function FixtureRenderer({ 
+  fixture, 
+  highlighted = false,
+  showLabels = false, 
+  showMeta = false,
+  hideUnhighlighted = false,
+  depth = 0, 
+  selectedTags = [], 
+  selectedFixtures = [],
+  onSelect 
+}: FixtureRendererProps) {
   const pointsRef = useRef<THREE.Points>(null)
   const [hovered, setHovered] = useState(false)
   
@@ -41,6 +54,25 @@ function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags 
     return { geometry: geom, boundingBox: bbox }
   }, [fixture.points])
 
+    // Check if this fixture should show points based on highlighting and hideUnhighlighted setting
+  const shouldShowPoints = useMemo(() => {
+    // If hideUnhighlighted is enabled, only show highlighted fixtures
+    if (hideUnhighlighted && !highlighted) {
+      return false
+    }
+    
+    // If no filters are active, show all points
+    if (selectedTags.length === 0 && selectedFixtures.length === 0) {
+      return true
+    }
+
+    // Check if this fixture matches tags or is in selectedFixtures
+    const matchesTags = selectedTags.some((tag) => fixture.tags.includes(tag))
+    const matchesFixtures = selectedFixtures.some(f => f.label === fixture.label)
+    
+    return matchesTags || matchesFixtures
+  }, [fixture.tags, fixture.label, selectedTags, selectedFixtures, highlighted, hideUnhighlighted])
+
   // Create bounding box wireframe
   const boundingBoxGeometry = useMemo(() => {
     if (boundingBox.isEmpty()) return null
@@ -57,30 +89,36 @@ function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags 
   // Material colors
   const pointMaterial = useMemo(() => {
     let color = '#00ff00'
-    if (hovered) color = '#ff8800'
+    if (highlighted) color = '#ffff00'
+    else if (hovered) color = '#ff8800'
     
     return new THREE.PointsMaterial({ 
       color, 
-      size: 2, 
-      sizeAttenuation: false 
+      size: highlighted ? 3 : 2, 
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: shouldShowPoints ? 1 : 0
     })
-  }, [hovered])
+  }, [highlighted, hovered, shouldShowPoints])
 
   const boxMaterial = useMemo(() => {
     let color = '#ffffff'
-    if (hovered) color = '#ff8800'
+    if (highlighted) color = '#ffff00'
+    else if (hovered) color = '#ff8800'
+    
+    const baseOpacity = highlighted ? 0.8 : 0.3
     
     return new THREE.MeshBasicMaterial({ 
       color, 
       wireframe: true,
       transparent: true,
-      opacity: 0.3
+      opacity: shouldShowPoints ? baseOpacity : 0
     })
-  }, [hovered])
+  }, [highlighted, hovered, shouldShowPoints])
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    if (onSelect) {
+    if (onSelect && showMeta) {
       onSelect(fixture)
     }
   }
@@ -94,54 +132,48 @@ function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags 
     return [center.x, center.y + size.y / 2 + 2, center.z] as [number, number, number]
   }, [boundingBox])
 
-  // Check if this fixture should show points based on tag filtering
-  const shouldShowPoints = useMemo(() => {
-    if (selectedTags.length === 0) return true
-
-    // Only check if this fixture itself has matching tags
-    return selectedTags.some((tag) => fixture.tags.includes(tag))
-  }, [fixture.tags, selectedTags])
-
-
   // Check if we should allow meta labeling
   const shouldShowMeta = depth === 1
 
   return (
-    <group>
+    <group onPointerEnter={() => setHovered(true)}
+          onPointerLeave={() => setHovered(false)}
+          
+          >
       {/* Points */}
-      {shouldShowPoints && fixture.points.length > 0 && (
+      {fixture.points.length > 0 && (
         <points
           ref={pointsRef}
           geometry={geometry}
           material={pointMaterial}
-          onClick={shouldShowMeta && handleClick}
-          onPointerEnter={() => setHovered(true)}
-          onPointerLeave={() => setHovered(false)}
+          onClick={handleClick}
+          
         />
       )}
       
       {/* Bounding box */}
-      {shouldShowPoints && shouldShowMeta && boundingBoxGeometry && (
+      {shouldShowMeta && boundingBoxGeometry && (
         <mesh
           geometry={boundingBoxGeometry}
           material={boxMaterial}
-          onClick={shouldShowMeta && handleClick}
-          onPointerEnter={() => setHovered(true)}
-          onPointerLeave={() => setHovered(false)}
+          onClick={handleClick}
+          // onPointerEnter={() => setHovered(true)}
+          // onPointerLeave={() => setHovered(false)}
         />
       )}
       
       {/* Label */}
-      {shouldShowPoints && shouldShowMeta && showLabels && (
+      {shouldShowMeta && showLabels && (
         <Html position={labelPosition} center>
           <div style={{
-            color:  '#ffffff',
+            color: highlighted ? '#ffff00' : '#ffffff',
             fontSize: '12px',
             fontFamily: 'monospace',
             textAlign: 'center',
             pointerEvents: 'none',
             textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
             textWrap: 'nowrap',
+            opacity: shouldShowPoints ? 1 : 0,
           }}>
             {fixture.label}
           </div>
@@ -153,8 +185,12 @@ function FixtureRenderer({ fixture, showLabels = false, depth = 0, selectedTags 
         <FixtureRenderer
           key={`${child.label}-${index}`}
           fixture={child}
+          highlighted={highlighted}
           showLabels={showLabels}
+          showMeta={showMeta}
+          hideUnhighlighted={hideUnhighlighted}
           selectedTags={selectedTags}
+          selectedFixtures={selectedFixtures}
           onSelect={onSelect}
           depth={depth + 1}
         />

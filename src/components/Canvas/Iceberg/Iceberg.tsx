@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber"
 import { Grid } from "@react-three/drei"
 import Loading from "../Loading"
 import Scene from "./Scene"
+import Cameras from "../Cameras"
 
 function Iceberg() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -27,6 +28,7 @@ function Iceberg() {
           sectionColor={"#03a9f4"}
           cellColor={"#d1e4f3"}
         />
+        <Cameras />
       </Suspense>
     </Canvas>
   )

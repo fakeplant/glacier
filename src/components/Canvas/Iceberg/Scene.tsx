@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Bounds, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Group } from 'three'
 import FixtureRenderer from '../FixtureRenderer'
 import { fixtureLoader, ParsedFixture } from '../../../lib/fixtures'
@@ -7,9 +7,12 @@ import { useFixtureStore } from '../../../hooks/useFixtureStore'
 
 function Scene() {
   const {
+    allFixtures,
+    selectedTopLevelFixture,
+    selectedFixtures,
     selectedTags,
     showLabels,
-    teFixture,
+    hideUnhighlighted,
     loading,
     error,
     handleFixtureSelect,
@@ -18,6 +21,8 @@ function Scene() {
   
   const highlightedGroupRef = useRef<Group>(null)
 
+  console.log('error', error) 
+  
   if (loading) {
     return (
       <>
@@ -38,7 +43,9 @@ function Scene() {
     )
   }
 
-  if (error || !teFixture) {
+  const currentFixture = allFixtures[selectedTopLevelFixture]
+  
+  if (error || !currentFixture) {
     return (
       <>
         <ambientLight intensity={1.5} />
@@ -58,41 +65,38 @@ function Scene() {
     )
   }
 
-  // Use all fixtures - filtering happens at render level
-  const allFixtures = [teFixture]
+  // Use current selected fixture
+  const fixtureList = [currentFixture]
+
+  // Determine which fixtures should be highlighted (OR logic)
+  const isHighlighted = (fixture: ParsedFixture): boolean => {
+    // Check if fixture is in selectedFixtures
+    const isSelectedFixture = selectedFixtures.some(f => f.label === fixture.label)
+    
+    // Check if fixture has any selected tags
+    const hasSelectedTags = selectedTags.some(tag => fixture.tags.includes(tag))
+    
+    return isSelectedFixture || hasSelectedTags
+  }
 
   return (
     <>
-      <OrbitControls 
-        enablePan={true} 
-        enableZoom={true} 
-        enableRotate={true}
-        dampingFactor={0.05}
-        enableDamping={true}
-      />
-      
-      <ambientLight intensity={1.5} />
-      <directionalLight
-        castShadow
-        position={[2.5, 8, 5]}
-        intensity={1.5}
-        shadow-mapSize={1024}
-      />
-      
-      <Bounds fit clip observe margin={1.2}>
-        <group onClick={handleCanvasClick}>
-          {/* All fixtures */}
-          {allFixtures.map((fixture, index) => (
-            <FixtureRenderer
-              key={`${fixture.label}-${index}`}
-              fixture={fixture}
-              showLabels={showLabels}
-              selectedTags={[...selectedTags]}
-              onSelect={handleFixtureSelect}
-            />
-          ))}
-        </group>
-      </Bounds>
+      <group onClick={handleCanvasClick}>
+        {/* All fixtures */}
+        {fixtureList.map((fixture, index) => (
+          <FixtureRenderer
+            key={`${fixture.label}-${index}`}
+            fixture={fixture as any}
+            highlighted={isHighlighted(fixture as any)}
+            showLabels={showLabels}
+            showMeta={true}
+            hideUnhighlighted={hideUnhighlighted}
+            selectedTags={[...selectedTags] as any}
+            selectedFixtures={[...selectedFixtures] as any}
+            onSelect={handleFixtureSelect}
+          />
+        ))}
+      </group>
     </>
   )
 }

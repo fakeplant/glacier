@@ -6,21 +6,28 @@ export function useFixtureStore() {
   
   return {
     // State (reactive snapshots)
-    selectedFixture: snap.selectedFixture,
+    allFixtures: snap.allFixtures,
+    selectedTopLevelFixture: snap.selectedTopLevelFixture,
+    selectedFixtures: snap.selectedFixtures,
     selectedTags: snap.selectedTags,
     showLabels: snap.showLabels,
+    hideUnhighlighted: snap.hideUnhighlighted,
     availableTags: snap.availableTags,
-    fixtureCategories: snap.fixtureCategories,
-    teFixture: snap.teFixture,
     loading: snap.loading,
     error: snap.error,
 
     // Actions (direct references to store)
-    setSelectedFixture: fixtureStore.setSelectedFixture,
+    setSelectedTopLevelFixture: fixtureStore.setSelectedTopLevelFixture,
+    setSelectedFixtures: fixtureStore.setSelectedFixtures,
+    toggleFixtureSelection: fixtureStore.toggleFixtureSelection,
+    selectAllFixtures: fixtureStore.selectAllFixtures,
+    clearAllFixtures: fixtureStore.clearAllFixtures,
     setSelectedTags: fixtureStore.setSelectedTags,
     setShowLabels: fixtureStore.setShowLabels,
-    loadTeFixture: fixtureStore.loadTeFixture,
+    setHideUnhighlighted: fixtureStore.setHideUnhighlighted,
+    loadAllFixtures: fixtureStore.loadAllFixtures,
     handleFixtureSelect: fixtureStore.handleFixtureSelect,
+    handleCanvasClick: fixtureStore.handleCanvasClick,
     clearFilters: fixtureStore.clearFilters,
   }
 }

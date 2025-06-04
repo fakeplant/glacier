@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react"
+import * as THREE from "three"
 import {
   CameraControls,
   GizmoHelper,
@@ -30,8 +31,8 @@ function Cameras() {
         makeDefault
         position={[10, 5, 0]}
         rotation={[-Math.PI / 2, 20, 0]}
-        near={-100}
-        far={100}
+        near={-10000}
+        far={10000}
         zoom={40}
       />
       <OrbitControls
@@ -41,22 +42,15 @@ function Cameras() {
         // onChange={(e) => console.log(e)}
         up={new Vector3(10, 0, 11)}
         ref={cameraControlsRef}
-        maxZoom={100}
-        minZoom={40}
+        maxZoom={10000}
+        minZoom={-10000}
         target={[0, 5, 0]}
+        mouseButtons={{
+          LEFT: THREE.MOUSE.PAN,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.ROTATE,
+        }}
       />
-      <Hud renderPriority={2}>
-        <OrthographicCamera
-          makeDefault
-          position={[0, 0, 10]}
-        />
-        <Html fullscreen>
-          {/*<button onClick={() => cameraControlsRef.current?.setPolarAngle(0)}>*/}
-          {/*  set*/}
-          {/*</button>*/}
-          {/*<button onClick={() => controlsRef.current?.saveState()}>save</button>*/}
-        </Html>
-      </Hud>
     </>
   )
 }
