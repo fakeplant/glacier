@@ -41,7 +41,6 @@ export function Layout(props: LayoutProps) {
         >
           <Burger
             opened={open}
-            onClick={() => {}}
             aria-label="Toggle navigation"
             size="sm"
           />

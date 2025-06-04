@@ -3,15 +3,19 @@ import {
   rem,
   SegmentedControl,
   Stack,
-  useMantineTheme,
   VisuallyHidden,
+  Text,
+  Button,
+  MultiSelect,
+  Divider,
+  Switch,
 } from "@mantine/core"
 import classes from "./Menu.module.css"
-import cx from "clsx"
 import { useEffect, useState } from "react"
-import { IconChartAreaLine, IconCircleHalfVertical } from "@tabler/icons-react"
+import { IconChartAreaLine, IconCircleHalfVertical, IconTag } from "@tabler/icons-react"
 import { Car } from "../../lib/types"
 import { useNavigate, useLocation } from "@tanstack/react-router"
+import { useFixtureStore } from "../../hooks/useFixtureStore"
 
 // -------------------------------------------------- //
 // Props
@@ -25,8 +29,19 @@ export function Menu(props: MenuProps) {
   // Props
   const {} = props
 
-  // Theme
-  const theme = useMantineTheme()
+  // Fixture store
+  const {
+    selectedFixture,
+    selectedTags,
+    showLabels,
+    availableTags,
+    fixtureCategories,
+    setSelectedFixture,
+    setSelectedTags,
+    setShowLabels,
+    clearFilters,
+  } = useFixtureStore()
+
 
   // Icons
   const iconProps = {
@@ -54,8 +69,8 @@ export function Menu(props: MenuProps) {
   }
 
   return (
-    <Box className={cx(classes.wrapper, { open: open })}>
-      <Stack className={classes.select}>
+    <Box className={classes.wrapper}>
+      <Stack className={classes.select} justify="center" align="end" w="100%">
         <SegmentedControl
           value={car}
           onChange={(value) => setCarRoute(value as Car)}
@@ -82,7 +97,77 @@ export function Menu(props: MenuProps) {
           size="md"
         />
       </Stack>
-      <Stack className={classes.stack}></Stack>
+
+      {car === Car.Iceberg && (
+        <Stack className={classes.stack} gap="md" p="md">
+          <Divider />
+          
+          {/* View Controls */}
+          <Box>
+            <Text size="sm" fw={600} mb="xs">View Controls</Text>
+            <Switch
+              label="Show Labels"
+              checked={showLabels}
+              onChange={(event) => setShowLabels(event.currentTarget.checked)}
+              size="sm"
+            />
+          </Box>
+
+          <Divider />
+
+          {/* Fixture Categories */}
+          <Box>
+            <Text size="sm" fw={600} mb="xs">Fixture Categories</Text>
+            <Stack gap="xs">
+              {fixtureCategories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedFixture === category ? "filled" : "light"}
+                  size="xs"
+                  onClick={() => setSelectedFixture(selectedFixture === category ? undefined : category)}
+                >
+                  {category.toUpperCase()}
+                </Button>
+              ))}
+            </Stack>
+          </Box>
+
+          <Divider />
+
+          {/* Tag Filters */}
+          <Box>
+            <Text size="sm" fw={600} mb="xs">
+              <IconTag size={16} style={{ display: 'inline', marginRight: '4px' }} />
+              Filter by Tags
+            </Text>
+            <MultiSelect
+              placeholder="Select tags to filter"
+              data={[...availableTags].map(tag => ({ value: tag, label: tag }))}
+              value={[...selectedTags]}
+              onChange={(tags) => setSelectedTags(tags)}
+              size="xs"
+              maxDropdownHeight={200}
+              searchable
+              clearable
+            />
+          </Box>
+
+          {selectedTags.length > 0 && (
+            <Box>
+              <Text size="xs" c="dimmed">
+                Filtering by: {selectedTags.join(', ')}
+              </Text>
+              <Button
+                variant="subtle"
+                size="xs"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </Box>
+          )}
+        </Stack>
+      )}
     </Box>
   )
 }

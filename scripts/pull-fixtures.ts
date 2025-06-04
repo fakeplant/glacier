@@ -37,7 +37,7 @@ if (!fixturesPath) {
   process.exit(1)
 }
 
-const fixturesDestPath = path.join(__dirname, "..", "src", "assets", "fixtures")
+const fixturesDestPath = path.join(__dirname, "..", "public", "fixtures")
 copyRecursiveSync(fixturesPath, fixturesDestPath)
 
 logger.info("Done.")
