@@ -4,6 +4,7 @@ import { Grid } from "@react-three/drei"
 import Loading from "../Loading"
 import Scene from "./Scene"
 import Cameras from "../Cameras"
+import * as THREE from "three"
 
 function Iceberg() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -12,13 +13,17 @@ function Iceberg() {
     <Canvas
       ref={canvasRef}
       shadows
-      style={{
-        height: "100%",
-        width: "100%",
-      }}
+      style={{ height: "100%", width: "100%" }}
     >
       <Suspense fallback={<Loading />}>
         <Scene />
+        <mesh>
+          <boxGeometry args={[4, 4, 4]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            roughness={0.5}
+          />
+        </mesh>
         <Grid
           infiniteGrid
           cellSize={10}

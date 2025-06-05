@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
-import { OrbitControls } from '@react-three/drei'
-import { Group } from 'three'
-import FixtureRenderer from '../FixtureRenderer'
-import { fixtureLoader, ParsedFixture } from '../../../lib/fixtures'
-import { useFixtureStore } from '../../../hooks/useFixtureStore'
+import { useEffect, useRef } from "react"
+import { OrbitControls } from "@react-three/drei"
+import { Group } from "three"
+import FixtureRenderer from "../FixtureRenderer"
+import { fixtureLoader, ParsedFixture } from "../../../lib/fixtures"
+import { useFixtureStore } from "../../../hooks/useFixtureStore"
 
 function Scene() {
   const {
@@ -16,13 +16,11 @@ function Scene() {
     loading,
     error,
     handleFixtureSelect,
-    handleCanvasClick
+    handleCanvasClick,
   } = useFixtureStore()
-  
+
   const highlightedGroupRef = useRef<Group>(null)
 
-  console.log('error', error) 
-  
   if (loading) {
     return (
       <>
@@ -44,7 +42,7 @@ function Scene() {
   }
 
   const currentFixture = allFixtures[selectedTopLevelFixture]
-  
+
   if (error || !currentFixture) {
     return (
       <>
@@ -71,11 +69,15 @@ function Scene() {
   // Determine which fixtures should be highlighted (OR logic)
   const isHighlighted = (fixture: ParsedFixture): boolean => {
     // Check if fixture is in selectedFixtures
-    const isSelectedFixture = selectedFixtures.some(f => f.label === fixture.label)
-    
+    const isSelectedFixture = selectedFixtures.some(
+      (f) => f.label === fixture.label
+    )
+
     // Check if fixture has any selected tags
-    const hasSelectedTags = selectedTags.some(tag => fixture.tags.includes(tag))
-    
+    const hasSelectedTags = selectedTags.some((tag) =>
+      fixture.tags.includes(tag)
+    )
+
     return isSelectedFixture || hasSelectedTags
   }
 

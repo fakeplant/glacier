@@ -54,6 +54,7 @@ export interface ParsedFixture {
   tags: string[]
   points: THREE.Vector3[]
   bounds: THREE.Box3
+  center: THREE.Vector3
   children: ParsedFixture[]
   meta?: Record<string, any>
 }
@@ -135,6 +136,7 @@ export class FixtureLoader {
       tags: definition.tags || [],
       points: [],
       bounds: new THREE.Box3(),
+      center: new THREE.Vector3(),
       children: [],
       meta: definition.meta,
     }
@@ -161,9 +163,16 @@ export class FixtureLoader {
       }
     }
 
-    // Calculate bounds
+    // Calculate bounds and center
     if (fixture.points.length > 0) {
       fixture.bounds.setFromPoints(fixture.points)
+      
+      // Calculate geometric center of all points
+      fixture.center.set(0, 0, 0)
+      fixture.points.forEach(point => {
+        fixture.center.add(point)
+      })
+      fixture.center.divideScalar(fixture.points.length)
     }
 
     this.loadedFixtures.set(cacheKey, fixture)

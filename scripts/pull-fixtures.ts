@@ -1,8 +1,13 @@
 import * as fs from "fs"
 import * as path from "path"
-import { logger } from "src/lib/logger"
+import { fileURLToPath } from "url"
+import { logger } from "../src/lib/logger"
 
-require("dotenv").config({ path: ".env.local" })
+import dotenv from "dotenv"
+dotenv.config({ path: ".env.local" })
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const copyRecursiveSync = (src: string, dest: string) => {
   if (fs.existsSync(src)) {
