@@ -132,14 +132,14 @@ function FixtureRenderer({
 
   // Material colors
   const pointMaterial = useMemo(() => {
-    let color = "#ffffff" // Green by default
+    let color = "#000000" // Green by default
     if (selected)
-      color = "#ffffff" // Blue if selected
-    else if (hovered) color = "#ffffff" // Orange if hovered
+      color = "#000000" // Blue if selected
+    else if (hovered) color = "#000000" // Orange if hovered
 
     return new THREE.PointsMaterial({
       color,
-      size: selected ? 5 : 3,
+      size: selected ? 7 : 7,
       sizeAttenuation: false,
       transparent: true,
       opacity: shouldShowPoints ? 1 : 0,
@@ -224,7 +224,7 @@ function FixtureRenderer({
       {withMeta && showLabels && shouldShowPoints && (
         <Billboard
           position={labelPosition}
-          renderOrder={depth * 10 + 3}
+          renderOrder={1000 + depth} // High render order to ensure it's always on top
         >
           <text
             text={fixture.label}
@@ -233,6 +233,9 @@ function FixtureRenderer({
             color={"#000000"}
             anchorX="center"
             anchorY="middle"
+            outlineWidth="10%"
+            outlineColor="#ffffff"
+            depthOffset={-1000000}
           />
         </Billboard>
       )}

@@ -723,39 +723,51 @@ export class FixtureLoader {
         this.controllers.set(output.host, controller)
       }
 
-      // Extract port number from output
-      const portNumber = this.extractPortNumber(output, fixture)
-      if (portNumber > 0 && portNumber <= maxPorts) {
-        // Get or create port
-        let port = controller.ports.get(portNumber)
-        if (!port) {
-          port = {
-            portNumber,
-            connectedFixtures: [],
-            outputs: [],
+      // For edges: only register if channel = 0 (start of chain)
+      // For panels: always register (they don't chain)
+      const isEdge = fixture.id.includes("/edge/")
+      const shouldRegister = !isEdge || (output.channel === 0)
+      
+      if (shouldRegister) {
+        // Extract port number from output
+        const portNumber = this.extractPortNumber(output, fixture)
+        
+        if (portNumber > 0 && portNumber <= maxPorts) {
+          // Get or create port
+          let port = controller.ports.get(portNumber)
+          if (!port) {
+            port = {
+              portNumber,
+              connectedFixtures: [],
+              outputs: [],
+            }
+            controller.ports.set(portNumber, port)
           }
-          controller.ports.set(portNumber, port)
-        }
 
-        // Add fixture and output to port
-        if (!port.connectedFixtures.includes(fixture.id)) {
-          port.connectedFixtures.push(fixture.id)
+          // Add fixture and output to port
+          if (!port.connectedFixtures.includes(fixture.id)) {
+            port.connectedFixtures.push(fixture.id)
+          }
+          port.outputs.push(output)
         }
-        port.outputs.push(output)
       }
     }
   }
 
   private extractPortNumber(output: ParsedOutput, fixture: ParsedFixture): number {
-    // For TE fixtures, extract from universe calculation
-    // universe is typically calculated as "$outputNumber*10" 
-    if (output.universe) {
-      const portNumber = Math.floor(output.universe / 10)
-      return portNumber
+    // For edges: use the "output" parameter directly (1-4)
+    const definition = fixture.definition
+    if (definition.parameters && definition.parameters.output && 
+        typeof definition.parameters.output === "object" && "default" in definition.parameters.output) {
+      return Number(definition.parameters.output.default) || 1
     }
     
-    // Fallback: try to extract from parameters
-    const definition = fixture.definition
+    // For panels: extract from universe calculation (universe = outputNumber * 10)
+    if (output.universe !== undefined && output.universe > 0) {
+      return Math.floor(output.universe / 10)
+    }
+    
+    // Fallback: look for panel-style "strandXoutput" parameters
     if (definition.parameters) {
       for (const [key, param] of Object.entries(definition.parameters)) {
         if (key.includes("output") && param && typeof param === "object" && "default" in param) {
@@ -797,8 +809,16 @@ export class FixtureLoader {
         })
         controller.position.divideScalar(connectedFixtures.length)
         
-        // Offset controller position slightly to avoid overlapping with fixtures
-        controller.position.y += 20 // Move 20 units above
+        // Calculate offset towards center (0,0,0)
+        const centerPoint = new THREE.Vector3(0, 0, 0)
+        const directionToCenter = centerPoint.clone().sub(controller.position).normalize()
+        
+        // Move controller 30 units towards center from fixture center
+        const offsetDistance = 30
+        controller.position.add(directionToCenter.multiplyScalar(offsetDistance))
+        
+        // Also add slight vertical offset to avoid overlapping with fixtures
+        controller.position.y += 15 // Move 15 units above
       }
     }
   }

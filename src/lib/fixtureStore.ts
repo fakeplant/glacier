@@ -65,6 +65,55 @@ interface FixtureActions {
   ) => void
 }
 
+// Helper function to find fixture in store
+const findFixtureInStore = (fixtureId: string): ParsedFixture | null => {
+  const searchInFixture = (fixture: ParsedFixture): ParsedFixture | null => {
+    if (fixture.id === fixtureId) return fixture
+    for (const child of fixture.children) {
+      const found = searchInFixture(child)
+      if (found) return found
+    }
+    return null
+  }
+
+  for (const [, topLevelFixture] of Object.entries(fixtureStore.allFixtures)) {
+    const found = searchInFixture(topLevelFixture)
+    if (found) return found
+  }
+  return null
+}
+
+// Helper function to find edge chain
+const findEdgeChain = (controllerHost: string, portNumber: number): ParsedFixture[] => {
+  const edges: ParsedFixture[] = []
+  
+  const searchEdges = (fixture: ParsedFixture) => {
+    if (fixture.id.includes("/edge/")) {
+      const output = fixture.outputs.find(o => o.host === controllerHost)
+      if (output) {
+        const fixturePort = fixture.definition.parameters?.output?.default || 1
+        if (fixturePort === portNumber) {
+          edges.push(fixture)
+        }
+      }
+    }
+    fixture.children.forEach(searchEdges)
+  }
+  
+  for (const [, topLevelFixture] of Object.entries(fixtureStore.allFixtures)) {
+    searchEdges(topLevelFixture)
+  }
+  
+  // Sort by ledOffset
+  edges.sort((a, b) => {
+    const offsetA = a.definition.parameters?.ledOffset?.default || 0
+    const offsetB = b.definition.parameters?.ledOffset?.default || 0
+    return offsetA - offsetB
+  })
+  
+  return edges
+}
+
 const defaultState: FixtureStore = {
   // Initial state (with localStorage fallbacks)
   allFixtures: {} as Record<string, ParsedFixture>,
@@ -100,7 +149,26 @@ export const fixtureActions: FixtureActions = {
   },
 
   setSelectedFixtures: (fixtures: string[]) => {
-    fixtureStore.selectedFixtures = fixtures
+    // Expand edge chains: if any edge is selected, include all edges in its chain
+    const expandedFixtures = new Set(fixtures)
+    
+    fixtures.forEach(fixtureId => {
+      const fixture = findFixtureInStore(fixtureId)
+      if (fixture && fixture.id.includes("/edge/")) {
+        // Find all edges in the same chain (same controller/port)
+        const edgeOutput = fixture.outputs.find(o => o.host)
+        if (edgeOutput) {
+          const controllerHost = edgeOutput.host
+          const portNumber = Math.floor((edgeOutput.universe || 10) / 10) || 1
+          
+          // Find all edges for this controller/port
+          const chainEdges = findEdgeChain(controllerHost, portNumber)
+          chainEdges.forEach(edge => expandedFixtures.add(edge.id))
+        }
+      }
+    })
+    
+    fixtureStore.selectedFixtures = Array.from(expandedFixtures)
   },
 
   toggleFixtureSelection: (fixture: ParsedFixture) => {

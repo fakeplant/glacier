@@ -49,10 +49,10 @@ interface ControllerRendererProps {
   selectedTags?: string[]
 }
 
-function ControllerRenderer({ 
-  showLabels = false, 
-  selectedFixtures = [], 
-  selectedTags = [] 
+function ControllerRenderer({
+  showLabels = false,
+  selectedFixtures = [],
+  selectedTags = [],
 }: ControllerRendererProps) {
   const { allFixtures } = useFixtureStore()
 
@@ -84,22 +84,29 @@ function ControllerRenderer({
     if (!fixture) return false
 
     // Check if fixture matches selected fixtures
-    const matchesFixtures = selectedFixtures.length === 0 || selectedFixtures.includes(fixture.id)
-    
+    const matchesFixtures =
+      selectedFixtures.length === 0 || selectedFixtures.includes(fixture.id)
+
     // Check if fixture matches selected tags
-    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => fixture.tags.includes(tag))
-    
+    const matchesTags =
+      selectedTags.length === 0 ||
+      selectedTags.some((tag) => fixture.tags.includes(tag))
+
     return matchesFixtures && matchesTags
   }
 
   const controllers = useMemo(() => {
     const allControllers = fixtureLoader.getControllers()
-    
+
     // Filter controllers based on whether they have any connected fixtures that match current filters
-    return allControllers.filter(controller => {
+    return allControllers.filter((controller) => {
       // Check if any port has fixtures that match the current filters
       for (const port of controller.ports.values()) {
-        if (port.connectedFixtures.some(fixtureId => fixtureMatchesFilters(fixtureId))) {
+        if (
+          port.connectedFixtures.some((fixtureId) =>
+            fixtureMatchesFilters(fixtureId)
+          )
+        ) {
           return true
         }
       }
@@ -110,13 +117,13 @@ function ControllerRenderer({
   return (
     <group>
       {controllers.map((controller) => (
-        <ControllerComponent 
-          key={controller.id} 
-          controller={controller} 
+        <ControllerComponent
+          key={controller.id}
+          controller={controller}
           showLabels={showLabels}
         />
       ))}
-      
+
       {/* Connection lines */}
       <ConnectionRenderer controllers={controllers} />
     </group>
@@ -128,10 +135,13 @@ interface ControllerComponentProps {
   showLabels: boolean
 }
 
-function ControllerComponent({ controller, showLabels }: ControllerComponentProps) {
+function ControllerComponent({
+  controller,
+  showLabels,
+}: ControllerComponentProps) {
   // Controller box geometry and material
   const boxGeometry = useMemo(() => {
-    return new THREE.BoxGeometry(15, 8, 10) // Size of controller box
+    return new THREE.BoxGeometry(15, 4, 8) // Size of controller box
   }, [])
 
   const boxMaterial = useMemo(() => {
@@ -160,7 +170,7 @@ function ControllerComponent({ controller, showLabels }: ControllerComponentProp
   const getPortMaterial = (portNumber: number) => {
     const portColors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44"] // Red, Green, Blue, Yellow
     const color = portColors[portNumber - 1] || "#ff4444"
-    
+
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
@@ -172,33 +182,52 @@ function ControllerComponent({ controller, showLabels }: ControllerComponentProp
   const portPositions = useMemo(() => {
     const positions: THREE.Vector3[] = []
     const portsArray = Array.from(controller.ports.values())
-    
+
     portsArray.forEach((port, index) => {
       // Position ports in a line along the front face of the controller
       const spacing = 3
-      const startX = -(portsArray.length - 1) * spacing / 2
+      const startX = (-(portsArray.length - 1) * spacing) / 2
       const x = startX + index * spacing
-      positions.push(new THREE.Vector3(x, -4, 5)) // Front face, bottom
+      positions.push(new THREE.Vector3(x, -1, 5)) // Front face, bottom
     })
-    
+
     return positions
   }, [controller.ports])
 
   return (
-    <group position={[controller.position.x, controller.position.y, controller.position.z]}>
+    <group
+      position={[
+        controller.position.x,
+        controller.position.y,
+        controller.position.z,
+      ]}
+    >
       {/* Main controller box */}
-      <mesh geometry={boxGeometry} material={boxMaterial} />
-      <mesh geometry={boxGeometry} material={wireframeMaterial} />
-      
+      <mesh
+        geometry={boxGeometry}
+        material={boxMaterial}
+      />
+      <mesh
+        geometry={boxGeometry}
+        material={wireframeMaterial}
+      />
+
       {/* Controller label */}
       {showLabels && (
-        <Billboard position={[0, 6, 0]}>
+        <Billboard
+          position={[0, 6, 0]}
+          renderOrder={1000}
+        >
           <text
-            text={`Controller\n${controller.id}`}
+            text={controller.id}
             fontSize={4}
-            color="#ffffff"
+            color="#000000"
+            fontWeight={"bold"}
             anchorX="center"
             anchorY="middle"
+            outlineWidth="10%"
+            outlineColor="#ffffff"
+            depthOffset={-1000000}
           />
         </Billboard>
       )}
@@ -209,19 +238,31 @@ function ControllerComponent({ controller, showLabels }: ControllerComponentProp
         if (!position) return null
 
         return (
-          <group key={port.portNumber} position={[position.x, position.y, position.z]}>
+          <group
+            key={port.portNumber}
+            position={[position.x, position.y, position.z]}
+          >
             {/* Port sphere */}
-            <mesh geometry={portGeometry} material={getPortMaterial(port.portNumber)} />
-            
+            <mesh
+              geometry={portGeometry}
+              material={getPortMaterial(port.portNumber)}
+            />
+
             {/* Port label */}
             {showLabels && (
-              <Billboard position={[0, 3, 0]}>
+              <Billboard
+                position={[0, 2, 0]}
+                renderOrder={1001}
+              >
                 <text
                   text={`P${port.portNumber}`}
                   fontSize={2}
-                  color="#ffffff"
+                  color="#000000"
                   anchorX="center"
                   anchorY="middle"
+                  outlineWidth="10%"
+                  outlineColor="#ffffff"
+                  depthOffset={-1000000}
                 />
               </Billboard>
             )}
