@@ -1,11 +1,11 @@
 import { useSnapshot } from "valtio"
-import { fixtureStore } from "../lib/fixtureStore"
+import { fixtureStore, fixtureActions } from "../lib/fixtureStore"
 
 export function useFixtureStore() {
   const snap = useSnapshot(fixtureStore)
 
   return {
-    // State (reactive snapshots)
+    // State (reactive snapshots) - NOTE: cameraTarget and desiredCameraTarget excluded to avoid re-renders
     fixture: snap.fixture,
     allFixtures: snap.allFixtures,
     selectedTopLevelFixture: snap.selectedTopLevelFixture,
@@ -16,20 +16,24 @@ export function useFixtureStore() {
     availableTags: snap.availableTags,
     loading: snap.loading,
     error: snap.error,
+    menuOpen: snap.menuOpen,
 
-    // Actions (direct references to store)
-    setSelectedTopLevelFixture: fixtureStore.setSelectedTopLevelFixture,
-    setSelectedFixtures: fixtureStore.setSelectedFixtures,
-    toggleFixtureSelection: fixtureStore.toggleFixtureSelection,
-    selectAllFixtures: fixtureStore.selectAllFixtures,
-    clearSelectedFixtures: fixtureStore.clearSelectedFixtures,
-    setSelectedTags: fixtureStore.setSelectedTags,
-    clearSelectedTags: fixtureStore.clearSelectedTags,
-    setShowLabels: fixtureStore.setShowLabels,
-    setHideUnhighlighted: fixtureStore.setHideUnhighlighted,
-    loadAllFixtures: fixtureStore.loadAllFixtures,
-    handleFixtureSelect: fixtureStore.handleFixtureSelect,
-    handleCanvasClick: fixtureStore.handleCanvasClick,
-    clearFilters: fixtureStore.clearFilters,
+    // Actions (direct references to actions)
+    setSelectedTopLevelFixture: fixtureActions.setSelectedTopLevelFixture,
+    setSelectedFixtures: fixtureActions.setSelectedFixtures,
+    toggleFixtureSelection: fixtureActions.toggleFixtureSelection,
+    selectAllFixtures: fixtureActions.selectAllFixtures,
+    clearSelectedFixtures: fixtureActions.clearSelectedFixtures,
+    setSelectedTags: fixtureActions.setSelectedTags,
+    clearSelectedTags: fixtureActions.clearSelectedTags,
+    setShowLabels: fixtureActions.setShowLabels,
+    loadAllFixtures: fixtureActions.loadAllFixtures,
+    handleFixtureSelect: fixtureActions.handleFixtureSelect,
+    handleCanvasClick: fixtureActions.handleCanvasClick,
+    clearFilters: fixtureActions.clearFilters,
+    focusOnFixture: fixtureActions.focusOnFixture,
+    setMenuOpen: fixtureActions.setMenuOpen,
+    setCameraTarget: fixtureActions.setCameraTarget,
+    setDesiredCameraTarget: fixtureActions.setDesiredCameraTarget,
   }
 }

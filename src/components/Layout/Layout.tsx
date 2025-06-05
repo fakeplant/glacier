@@ -8,8 +8,8 @@ import {
 } from "@mantine/core"
 import classes from "./Layout.module.css"
 import Menu from "../Menu/Menu"
-import { useState } from "react"
 import cx from "clsx"
+import { useFixtureStore } from "../../hooks/useFixtureStore"
 
 // -------------------------------------------------- //
 // Props
@@ -28,8 +28,8 @@ export function Layout(props: LayoutProps) {
   // Theme
   const theme = useMantineTheme()
 
-  // State
-  const [open, setOpen] = useState(false)
+  // Store
+  const { menuOpen, setMenuOpen } = useFixtureStore()
 
   return (
     <>
@@ -47,14 +47,14 @@ export function Layout(props: LayoutProps) {
           }}
         >
           <Burger
-            onClick={() => setOpen(!open)}
-            opened={open}
+            onClick={() => setMenuOpen(!menuOpen)}
+            opened={menuOpen}
             aria-label="Toggle navigation"
             size="sm"
           />
         </Paper>
       </Box>
-      <Box className={cx(classes.wrapper, open && classes.open)}>
+      <Box className={cx(classes.wrapper, menuOpen && classes.open)}>
         <Menu />
         {children}
       </Box>

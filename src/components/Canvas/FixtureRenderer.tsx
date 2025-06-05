@@ -49,7 +49,7 @@ interface FixtureRendererProps {
   hideUnselected?: boolean
   depth?: number
   selectedTags?: string[]
-  selectedFixtures?: ParsedFixture[]
+  selectedFixtures?: string[]
   onSelect?: (fixture: ParsedFixture) => void
 }
 
@@ -105,14 +105,12 @@ function FixtureRenderer({
 
     // Check if this fixture matches tags or is in selectedFixtures
     const matchesTags = selectedTags.some((tag) => fixture.tags.includes(tag))
-    const matchesFixtures = selectedFixtures.some(
-      (f) => f.label === fixture.label
-    )
+    const matchesFixtures = selectedFixtures.includes(fixture.id)
 
     return matchesTags || matchesFixtures
   }, [
     fixture.tags,
-    fixture.label,
+    fixture.id,
     selectedTags,
     selectedFixtures,
     selected,
@@ -242,7 +240,7 @@ function FixtureRenderer({
       {/* Render children */}
       {fixture.children.map((child, index) => (
         <FixtureRenderer
-          key={`${child.label}-${index}`}
+          key={`${child.id}-${index}`}
           fixture={child}
           selected={selected}
           showLabels={showLabels}

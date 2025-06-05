@@ -49,12 +49,12 @@ export function Menu(props: MenuProps) {
     fixture,
     setSelectedFixtures,
     setShowLabels,
-    setHideUnhighlighted,
     selectedFixtures,
     clearSelectedFixtures,
     clearSelectedTags,
     handleFixtureSelect,
     clearFilters,
+    focusOnFixture,
   } = useFixtureStore()
 
   // Icons
@@ -147,14 +147,6 @@ export function Menu(props: MenuProps) {
               onChange={(event) => setShowLabels(event.currentTarget.checked)}
               size="sm"
             />
-            <Switch
-              label="Hide Unhighlighted"
-              checked={hideUnhighlighted}
-              onChange={(event) =>
-                setHideUnhighlighted(event.currentTarget.checked)
-              }
-              size="sm"
-            />
           </Stack>
         </Box>
 
@@ -231,8 +223,8 @@ export function Menu(props: MenuProps) {
 
           <MultiSelect
             placeholder="Select fixtures to filter"
-            data={[...fixture.children].map((child) => ({
-              value: child.label,
+            data={(fixture ? [...fixture.children] : []).map((child) => ({
+              value: child.id,
               label: child.label,
             }))}
             value={[...selectedFixtures]}
@@ -249,16 +241,47 @@ export function Menu(props: MenuProps) {
             <Text
               size="xs"
               c="dimmed"
+              mb="xs"
             >
-              Filtering by: {selectedFixtures.join(", ")}
+              Selected fixtures:
             </Text>
-            <Button
-              variant="light"
-              size="compact-xs"
-              onClick={clearSelectedFixtures}
-            >
-              Clear Filters
-            </Button>
+            <Stack gap="xs">
+              {selectedFixtures.map((fixtureId: string) => {
+                // Find the fixture with this ID to get its label
+                const findFixture = (fixture: any, id: string): any => {
+                  if (fixture.id === id) return fixture
+                  for (const child of fixture.children) {
+                    const found = findFixture(child, id)
+                    if (found) return found
+                  }
+                  return null
+                }
+                const foundFixture = fixture
+                  ? findFixture(fixture, fixtureId)
+                  : null
+                const label = foundFixture ? foundFixture.label : fixtureId
+
+                return (
+                  <Button
+                    key={fixtureId}
+                    variant="light"
+                    size="compact-xs"
+                    onClick={() => focusOnFixture(fixtureId)}
+                    style={{ justifyContent: "flex-start" }}
+                  >
+                    📷 {label}
+                  </Button>
+                )
+              })}
+              <Button
+                variant="outline"
+                size="compact-xs"
+                onClick={clearSelectedFixtures}
+                c="dimmed"
+              >
+                Clear All
+              </Button>
+            </Stack>
           </Box>
         )}
       </Stack>

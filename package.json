@@ -36,7 +36,8 @@
     "resend": "^3.2.0",
     "three": "^0.163.0",
     "troika-three-text": "^0.52.4",
-    "valtio": "^2.1.5"
+    "valtio": "^2.1.5",
+    "valtio-persist": "^2.2.4"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.120.15",

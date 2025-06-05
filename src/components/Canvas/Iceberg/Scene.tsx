@@ -67,21 +67,6 @@ function Scene() {
   // Use current selected fixture
   const fixtureList = [currentFixture]
 
-  // Determine which fixtures should be highlighted (OR logic)
-  const isHighlighted = (fixture: ParsedFixture): boolean => {
-    // Check if fixture is in selectedFixtures
-    const isSelectedFixture = selectedFixtures.some(
-      (f) => f.label === fixture.label
-    )
-
-    // Check if fixture has any selected tags
-    const hasSelectedTags = selectedTags.some((tag) =>
-      fixture.tags.includes(tag)
-    )
-
-    return isSelectedFixture || hasSelectedTags
-  }
-
   return (
     <>
       {/* <group onClick={handleCanvasClick}> */}
@@ -89,14 +74,12 @@ function Scene() {
         {/* All fixtures */}
         {fixtureList.map((fixture, index) => (
           <FixtureRenderer
-            key={`${fixture.label}-${index}`}
-            fixture={fixture as any}
-            highlighted={isHighlighted(fixture as any)}
+            key={`${fixture.id}-${index}`}
+            fixture={fixture}
             showLabels={showLabels}
             showMeta={true}
-            hideUnhighlighted={hideUnhighlighted}
-            selectedTags={[...selectedTags] as any}
-            selectedFixtures={[...selectedFixtures] as any}
+            selectedTags={[...selectedTags]}
+            selectedFixtures={[...selectedFixtures]}
             onSelect={handleFixtureSelect}
           />
         ))}

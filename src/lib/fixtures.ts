@@ -50,6 +50,7 @@ export interface FixtureDefinition {
 
 export interface ParsedFixture {
   definition: FixtureDefinition
+  id: string
   label: string
   tags: string[]
   points: THREE.Vector3[]
@@ -132,6 +133,7 @@ export class FixtureLoader {
 
     const fixture: ParsedFixture = {
       definition,
+      id: path,
       label: definition.label || path,
       tags: definition.tags || [],
       points: [],
