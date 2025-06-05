@@ -412,6 +412,8 @@ export class FixtureLoader {
   ) {
     const point = new THREE.Vector3(0, 0, 0)
     point.applyMatrix4(transform)
+    // Flip Z coordinate to match Three.js coordinate system
+    point.z = -point.z
     fixture.points.push(point)
   }
 
@@ -428,6 +430,8 @@ export class FixtureLoader {
           coord.z || 0
         )
         point.applyMatrix4(transform)
+        // Flip Z coordinate to match Three.js coordinate system
+        point.z = -point.z
         fixture.points.push(point)
       }
     }
@@ -453,6 +457,8 @@ export class FixtureLoader {
       const index = reverse ? numPoints - 1 - i : i
       const point = new THREE.Vector3(index * spacing, 0, 0)
       point.applyMatrix4(transform)
+      // Flip Z coordinate to match Three.js coordinate system
+      point.z = -point.z
       points.push(point)
     }
 
@@ -485,6 +491,8 @@ export class FixtureLoader {
         radius * Math.sin(angle)
       )
       point.applyMatrix4(transform)
+      // Flip Z coordinate to match Three.js coordinate system
+      point.z = -point.z
       fixture.points.push(point)
     }
   }

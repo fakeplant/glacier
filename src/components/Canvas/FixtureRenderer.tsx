@@ -145,6 +145,8 @@ function FixtureRenderer({
       sizeAttenuation: false,
       transparent: true,
       opacity: shouldShowPoints ? 1 : 0,
+      depthTest: true,
+      depthWrite: true,
     })
   }, [selected, hovered, shouldShowPoints])
 
@@ -161,6 +163,8 @@ function FixtureRenderer({
       wireframe: true,
       transparent: true,
       opacity: shouldShowPoints ? baseOpacity : 0,
+      depthTest: true,
+      depthWrite: false, // Wireframes don't need to write depth
     })
   }, [selected, hovered, shouldShowPoints])
 
@@ -184,12 +188,18 @@ function FixtureRenderer({
   }, [fixture.center, boundingBox])
 
   // Check if we should allow meta labeling
-  const shouldShowMeta = depth === 1
+  const withMeta = depth === 1
 
   return (
     <group
-      onPointerEnter={() => setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
+    // onPointerOver={(e) => {
+    //   e.stopPropagation()
+    //   setHovered(true)
+    // }}
+    // onPointerOut={(e) => {
+    //   e.stopPropagation()
+    //   setHovered(false)
+    // }}
     >
       {/* Points */}
       {fixture.points.length > 0 && (
@@ -198,23 +208,26 @@ function FixtureRenderer({
           geometry={geometry}
           material={pointMaterial}
           onClick={handleClick}
+          renderOrder={depth * 10 + 1} // Points render first within depth level
         />
       )}
 
       {/* Bounding box */}
-      {shouldShowMeta && boundingBoxGeometry && (
+      {withMeta && boundingBoxGeometry && (
         <mesh
           geometry={boundingBoxGeometry}
           material={boxMaterial}
-          // onClick={handleClick}
-          // onPointerEnter={() => setHovered(true)}
-          // onPointerLeave={() => setHovered(false)}
+          onClick={handleClick}
+          renderOrder={depth * 10 + 2} // Wireframes render after points
         />
       )}
 
       {/* Label */}
-      {shouldShowMeta && showLabels && shouldShowPoints && (
-        <Billboard position={labelPosition}>
+      {withMeta && showLabels && shouldShowPoints && (
+        <Billboard
+          position={labelPosition}
+          renderOrder={depth * 10 + 3}
+        >
           <text
             text={fixture.label}
             fontWeight={"bold"}
