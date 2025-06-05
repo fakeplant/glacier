@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import { OrbitControls } from "@react-three/drei"
 import { Group } from "three"
 import FixtureRenderer from "../FixtureRenderer"
+import ControllerRenderer from "../ControllerRenderer"
 import { fixtureLoader, ParsedFixture } from "../../../lib/fixtures"
 import { useFixtureStore } from "../../../hooks/useFixtureStore"
 
@@ -83,6 +84,13 @@ function Scene() {
             onSelect={handleFixtureSelect}
           />
         ))}
+
+        {/* Controllers */}
+        <ControllerRenderer 
+          showLabels={showLabels} 
+          selectedFixtures={[...selectedFixtures]}
+          selectedTags={[...selectedTags]}
+        />
       </group>
     </>
   )

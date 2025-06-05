@@ -48,6 +48,42 @@ export interface FixtureDefinition {
   isVisible?: boolean
 }
 
+export interface OutputSegment {
+  componentIndex?: number
+  componentId?: string
+  start?: number
+  num?: number
+  length?: number
+  reverse?: boolean
+  padPre?: number
+  padPost?: number
+}
+
+export interface ParsedOutput {
+  host: string
+  protocol: string
+  universe?: number
+  channel?: number
+  enabled: boolean
+  sequenceEnabled?: boolean
+  segments?: OutputSegment[]
+  isChained: boolean // true if channel > 0
+}
+
+export interface Port {
+  portNumber: number
+  connectedFixtures: string[] // fixture IDs
+  outputs: ParsedOutput[]
+}
+
+export interface Controller {
+  id: string // IP address
+  position: THREE.Vector3
+  rotation: THREE.Euler
+  ports: Map<number, Port> // port number -> Port
+  maxPorts: number // 4 for TE, 8 for Mothership
+}
+
 export interface ParsedFixture {
   definition: FixtureDefinition
   id: string
@@ -58,11 +94,13 @@ export interface ParsedFixture {
   center: THREE.Vector3
   children: ParsedFixture[]
   meta?: Record<string, any>
+  outputs: ParsedOutput[]
 }
 
 export class FixtureLoader {
   private fixtureCache = new Map<string, FixtureDefinition>()
   private loadedFixtures = new Map<string, ParsedFixture>()
+  private controllers = new Map<string, Controller>() // IP -> Controller
 
   async loadFixture(path: string): Promise<FixtureDefinition> {
     if (this.fixtureCache.has(path)) {
@@ -141,6 +179,7 @@ export class FixtureLoader {
       center: new THREE.Vector3(),
       children: [],
       meta: definition.meta,
+      outputs: [],
     }
 
     // Apply transforms
@@ -175,6 +214,12 @@ export class FixtureLoader {
         fixture.center.add(point)
       })
       fixture.center.divideScalar(fixture.points.length)
+    }
+
+    // Process outputs and register controllers
+    if (definition.outputs) {
+      fixture.outputs = this.processOutputs(definition.outputs, resolvedParams, fixture)
+      this.registerControllers(fixture)
     }
 
     this.loadedFixtures.set(cacheKey, fixture)
@@ -608,6 +653,154 @@ export class FixtureLoader {
 
     fixtures.forEach(addTags)
     return Array.from(tags).sort()
+  }
+
+  private processOutputs(
+    outputs: any[],
+    parameters: Record<string, any>,
+    fixture: ParsedFixture
+  ): ParsedOutput[] {
+    return outputs.map((output) => {
+      // Resolve parameter substitutions
+      const host = this.evaluateStringExpression(output.host || "", parameters)
+      const universe = output.universe ? this.evaluateExpression(output.universe, parameters) : undefined
+      const channel = output.channel ? this.evaluateExpression(output.channel, parameters) : 0
+      const enabled = output.enabled !== undefined ? 
+        (typeof output.enabled === "boolean" ? output.enabled : this.evaluateExpression(output.enabled, parameters) !== 0) : 
+        true
+      const sequenceEnabled = output.sequenceEnabled !== undefined ? 
+        (typeof output.sequenceEnabled === "boolean" ? output.sequenceEnabled : this.evaluateExpression(output.sequenceEnabled, parameters) !== 0) : 
+        false
+
+      const parsedOutput: ParsedOutput = {
+        host,
+        protocol: output.protocol || "artnet",
+        universe,
+        channel,
+        enabled,
+        sequenceEnabled,
+        segments: output.segments || [],
+        isChained: channel > 0,
+      }
+
+      return parsedOutput
+    }).filter(output => output.enabled)
+  }
+
+  private evaluateStringExpression(
+    expr: string,
+    parameters: Record<string, any> = {}
+  ): string {
+    if (!expr) return ""
+    
+    let result = expr
+    for (const [key, value] of Object.entries(parameters)) {
+      const regex = new RegExp(`\\$${key}\\b`, "g")
+      result = result.replace(regex, String(value))
+    }
+    
+    return result
+  }
+
+  private registerControllers(fixture: ParsedFixture) {
+    for (const output of fixture.outputs) {
+      if (!output.host) continue
+
+      // Determine max ports based on fixture type
+      const isTE = fixture.id.startsWith("TE/")
+      const maxPorts = isTE ? 4 : 8
+
+      // Get or create controller
+      let controller = this.controllers.get(output.host)
+      if (!controller) {
+        controller = {
+          id: output.host,
+          position: new THREE.Vector3(),
+          rotation: new THREE.Euler(),
+          ports: new Map(),
+          maxPorts,
+        }
+        this.controllers.set(output.host, controller)
+      }
+
+      // Extract port number from output
+      const portNumber = this.extractPortNumber(output, fixture)
+      if (portNumber > 0 && portNumber <= maxPorts) {
+        // Get or create port
+        let port = controller.ports.get(portNumber)
+        if (!port) {
+          port = {
+            portNumber,
+            connectedFixtures: [],
+            outputs: [],
+          }
+          controller.ports.set(portNumber, port)
+        }
+
+        // Add fixture and output to port
+        if (!port.connectedFixtures.includes(fixture.id)) {
+          port.connectedFixtures.push(fixture.id)
+        }
+        port.outputs.push(output)
+      }
+    }
+  }
+
+  private extractPortNumber(output: ParsedOutput, fixture: ParsedFixture): number {
+    // For TE fixtures, extract from universe calculation
+    // universe is typically calculated as "$outputNumber*10" 
+    if (output.universe) {
+      const portNumber = Math.floor(output.universe / 10)
+      return portNumber
+    }
+    
+    // Fallback: try to extract from parameters
+    const definition = fixture.definition
+    if (definition.parameters) {
+      for (const [key, param] of Object.entries(definition.parameters)) {
+        if (key.includes("output") && param && typeof param === "object" && "default" in param) {
+          return Number(param.default) || 1
+        }
+      }
+    }
+    
+    return 1 // Default to port 1
+  }
+
+  // Get all controllers
+  getControllers(): Controller[] {
+    this.updateControllerPositions()
+    return Array.from(this.controllers.values())
+  }
+
+  private updateControllerPositions() {
+    for (const controller of this.controllers.values()) {
+      // Calculate position as center of all connected fixtures
+      const connectedFixtures: ParsedFixture[] = []
+      
+      for (const port of controller.ports.values()) {
+        for (const fixtureId of port.connectedFixtures) {
+          // Find fixture by ID in loaded fixtures
+          for (const [, fixture] of this.loadedFixtures) {
+            if (fixture.id === fixtureId) {
+              connectedFixtures.push(fixture)
+              break
+            }
+          }
+        }
+      }
+
+      if (connectedFixtures.length > 0) {
+        controller.position.set(0, 0, 0)
+        connectedFixtures.forEach(fixture => {
+          controller.position.add(fixture.center)
+        })
+        controller.position.divideScalar(connectedFixtures.length)
+        
+        // Offset controller position slightly to avoid overlapping with fixtures
+        controller.position.y += 20 // Move 20 units above
+      }
+    }
   }
 }
 

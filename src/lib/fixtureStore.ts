@@ -222,7 +222,7 @@ export const fixtureActions: FixtureActions = {
     // Calculate camera position and target based on fixture bounds
     const bounds = targetFixture.bounds
     const center = targetFixture.center
-    
+
     // Create a new Box3 to ensure we have the getSize method available
     const box3 = new THREE.Box3()
     if (bounds.min && bounds.max) {
@@ -232,7 +232,7 @@ export const fixtureActions: FixtureActions = {
       // Fallback: recreate bounds from points if the Box3 methods aren't available
       box3.setFromPoints(targetFixture.points)
     }
-    
+
     const size = box3.getSize(new THREE.Vector3())
     const maxDim = Math.max(size.x, size.y, size.z)
 
@@ -266,4 +266,4 @@ export const fixtureActions: FixtureActions = {
 }
 
 // Auto-load fixture data when store is created
-// fixtureActions.loadAllFixtures()
+fixtureActions.loadAllFixtures()
