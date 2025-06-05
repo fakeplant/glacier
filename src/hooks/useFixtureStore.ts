@@ -1,11 +1,12 @@
-import { useSnapshot } from 'valtio'
-import { fixtureStore } from '../lib/fixtureStore'
+import { useSnapshot } from "valtio"
+import { fixtureStore } from "../lib/fixtureStore"
 
 export function useFixtureStore() {
   const snap = useSnapshot(fixtureStore)
-  
+
   return {
     // State (reactive snapshots)
+    fixture: snap.fixture,
     allFixtures: snap.allFixtures,
     selectedTopLevelFixture: snap.selectedTopLevelFixture,
     selectedFixtures: snap.selectedFixtures,
@@ -21,8 +22,9 @@ export function useFixtureStore() {
     setSelectedFixtures: fixtureStore.setSelectedFixtures,
     toggleFixtureSelection: fixtureStore.toggleFixtureSelection,
     selectAllFixtures: fixtureStore.selectAllFixtures,
-    clearAllFixtures: fixtureStore.clearAllFixtures,
+    clearSelectedFixtures: fixtureStore.clearSelectedFixtures,
     setSelectedTags: fixtureStore.setSelectedTags,
+    clearSelectedTags: fixtureStore.clearSelectedTags,
     setShowLabels: fixtureStore.setShowLabels,
     setHideUnhighlighted: fixtureStore.setHideUnhighlighted,
     loadAllFixtures: fixtureStore.loadAllFixtures,

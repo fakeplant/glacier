@@ -10,17 +10,17 @@ export const theme = createTheme({
     xxl: `0 6px 12px 12px ${rgba("var(--mantine-color-dark-9)", 0.05)}`,
   },
 
-  // spacing
-  spacing: {
-    xxs: "calc(0.225rem*var(--mantine-scale))",
-  },
+  primaryColor: "dark",
 
-  fontFamily: 'Mukta Malar, sans-serif',
+  // spacing
+  spacing: { xxs: "calc(0.225rem*var(--mantine-scale))" },
+
+  // fontFamily: "Mukta Malar, sans-serif",
 
   /* Put your mantine theme override here */
   headings: {
     fontWeight: "700",
-    fontFamily: 'Mukta Malar, sans-serif',
+    // fontFamily: "Mukta Malar, sans-serif",
     // lineHeight: "1.4",
 
     // properties for individual headings, all of them are optional

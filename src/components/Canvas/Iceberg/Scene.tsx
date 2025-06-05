@@ -11,6 +11,7 @@ function Scene() {
     selectedTopLevelFixture,
     selectedFixtures,
     selectedTags,
+    fixture,
     showLabels,
     hideUnhighlighted,
     loading,
@@ -41,7 +42,7 @@ function Scene() {
     )
   }
 
-  const currentFixture = allFixtures[selectedTopLevelFixture]
+  const currentFixture = fixture
 
   if (error || !currentFixture) {
     return (
@@ -83,7 +84,8 @@ function Scene() {
 
   return (
     <>
-      <group onClick={handleCanvasClick}>
+      {/* <group onClick={handleCanvasClick}> */}
+      <group>
         {/* All fixtures */}
         {fixtureList.map((fixture, index) => (
           <FixtureRenderer

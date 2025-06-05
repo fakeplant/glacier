@@ -1,6 +1,8 @@
 .wrapper {
   height: 100%;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
 .select {

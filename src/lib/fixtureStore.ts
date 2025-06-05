@@ -1,11 +1,12 @@
-import { proxy, subscribe } from 'valtio'
-import { fixtureLoader, ParsedFixture } from './fixtures'
+import { proxy, subscribe } from "valtio"
+import { fixtureLoader, ParsedFixture } from "./fixtures"
 
 interface FixtureStore {
   // State
-  allFixtures: Record<string, ParsedFixture> // 'TE' | 'Mothership' 
+  fixture: ParsedFixture // Current top-level fixture (TE or Mothership)
+  allFixtures: Record<string, ParsedFixture> // 'TE' | 'Mothership'
   selectedTopLevelFixture: string // 'TE' | 'Mothership'
-  selectedFixtures: ParsedFixture[]
+  selectedFixtures: string[]
   selectedTags: string[]
   showLabels: boolean
   hideUnhighlighted: boolean
@@ -15,15 +16,16 @@ interface FixtureStore {
 
   // Actions
   setSelectedTopLevelFixture: (fixture: string) => void
-  setSelectedFixtures: (fixtures: ParsedFixture[]) => void
+  setSelectedFixtures: (fixtures: string[]) => void
   toggleFixtureSelection: (fixture: ParsedFixture) => void
   selectAllFixtures: () => void
-  clearAllFixtures: () => void
+  clearSelectedFixtures: () => void
   setSelectedTags: (tags: string[]) => void
   setShowLabels: (show: boolean) => void
   setHideUnhighlighted: (hide: boolean) => void
   loadAllFixtures: () => Promise<void>
   handleFixtureSelect: (fixture: ParsedFixture) => void
+  clearSelectedTags: () => void
   handleCanvasClick: () => void
   clearFilters: () => void
 }
@@ -31,7 +33,7 @@ interface FixtureStore {
 export const fixtureStore = proxy<FixtureStore>({
   // Initial state
   allFixtures: {},
-  selectedTopLevelFixture: 'TE',
+  selectedTopLevelFixture: "TE",
   selectedFixtures: [],
   selectedTags: [],
   showLabels: false,
@@ -39,6 +41,10 @@ export const fixtureStore = proxy<FixtureStore>({
   availableTags: [],
   loading: false,
   error: undefined,
+
+  get fixture() {
+    return fixtureStore.allFixtures[fixtureStore.selectedTopLevelFixture]
+  },
 
   // Actions
   setSelectedTopLevelFixture: (fixture: string) => {
@@ -53,16 +59,24 @@ export const fixtureStore = proxy<FixtureStore>({
   },
 
   toggleFixtureSelection: (fixture: ParsedFixture) => {
-    const isSelected = fixtureStore.selectedFixtures.some(f => f.label === fixture.label)
+    const isSelected = fixtureStore.selectedFixtures.some(
+      (f) => f.label === fixture.label
+    )
     if (isSelected) {
-      fixtureStore.selectedFixtures = fixtureStore.selectedFixtures.filter(f => f.label !== fixture.label)
+      fixtureStore.selectedFixtures = fixtureStore.selectedFixtures.filter(
+        (f) => f.label !== fixture.label
+      )
     } else {
-      fixtureStore.selectedFixtures = [...fixtureStore.selectedFixtures, fixture]
+      fixtureStore.selectedFixtures = [
+        ...fixtureStore.selectedFixtures,
+        fixture,
+      ]
     }
   },
 
   selectAllFixtures: () => {
-    const currentFixture = fixtureStore.allFixtures[fixtureStore.selectedTopLevelFixture]
+    const currentFixture =
+      fixtureStore.allFixtures[fixtureStore.selectedTopLevelFixture]
     if (currentFixture) {
       const allFixtures: ParsedFixture[] = []
       const traverse = (fixture: ParsedFixture) => {
@@ -74,8 +88,12 @@ export const fixtureStore = proxy<FixtureStore>({
     }
   },
 
-  clearAllFixtures: () => {
+  clearSelectedFixtures: () => {
     fixtureStore.selectedFixtures = []
+  },
+
+  clearSelectedTags: () => {
+    fixtureStore.selectedTags = []
   },
 
   setSelectedTags: (tags: string[]) => {
@@ -94,25 +112,26 @@ export const fixtureStore = proxy<FixtureStore>({
     try {
       fixtureStore.loading = true
       fixtureStore.error = undefined
-      
+
       // Load both fixtures
       const [teFixture, mothershipFixture] = await Promise.all([
-        fixtureLoader.parseFixture('TE/TE'),
-        fixtureLoader.parseFixture('Mothership/Mothership')
+        fixtureLoader.parseFixture("TE/TE"),
+        fixtureLoader.parseFixture("Mothership/Mothership"),
       ])
-      
+
       fixtureStore.allFixtures = {
-        'TE': teFixture,
-        'Mothership': mothershipFixture
+        TE: teFixture,
+        Mothership: mothershipFixture,
       }
-      
+
       // Extract available tags from all fixtures
       const allFixtureList = Object.values(fixtureStore.allFixtures)
       const tags = fixtureLoader.getAllTags(allFixtureList)
       fixtureStore.availableTags = tags
     } catch (err) {
-      console.error('Failed to load fixtures:', err)
-      fixtureStore.error = err instanceof Error ? err.message : 'Failed to load fixtures'
+      console.error("Failed to load fixtures:", err)
+      fixtureStore.error =
+        err instanceof Error ? err.message : "Failed to load fixtures"
     } finally {
       fixtureStore.loading = false
     }
@@ -132,7 +151,7 @@ export const fixtureStore = proxy<FixtureStore>({
   clearFilters: () => {
     fixtureStore.selectedFixtures = []
     fixtureStore.selectedTags = []
-  }
+  },
 })
 
 // Auto-load fixture data when store is created

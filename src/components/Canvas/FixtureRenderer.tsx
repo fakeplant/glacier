@@ -134,10 +134,10 @@ function FixtureRenderer({
 
   // Material colors
   const pointMaterial = useMemo(() => {
-    let color = "#00ff00" // Green by default
+    let color = "#ffffff" // Green by default
     if (selected)
-      color = "#0000ff" // Blue if selected
-    else if (hovered) color = "#ff8800" // Orange if hovered
+      color = "#ffffff" // Blue if selected
+    else if (hovered) color = "#ffffff" // Orange if hovered
 
     return new THREE.PointsMaterial({
       color,
@@ -207,7 +207,7 @@ function FixtureRenderer({
           ref={pointsRef}
           geometry={geometry}
           material={pointMaterial}
-          onClick={handleClick}
+          // onClick={handleClick}
           renderOrder={depth * 10 + 1} // Points render first within depth level
         />
       )}
@@ -217,7 +217,7 @@ function FixtureRenderer({
         <mesh
           geometry={boundingBoxGeometry}
           material={boxMaterial}
-          onClick={handleClick}
+          // onClick={handleClick}
           renderOrder={depth * 10 + 2} // Wireframes render after points
         />
       )}
