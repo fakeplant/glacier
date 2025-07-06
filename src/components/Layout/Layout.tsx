@@ -1,10 +1,15 @@
-"use client"
-
-import { ActionIcon, Box, Burger, Text, useMantineTheme } from "@mantine/core"
+import {
+  ActionIcon,
+  Box,
+  Burger,
+  Paper,
+  Text,
+  useMantineTheme,
+} from "@mantine/core"
 import classes from "./Layout.module.css"
 import Menu from "../Menu/Menu"
-import { useState } from "react"
 import cx from "clsx"
+import { useFixtureStore } from "../../hooks/useFixtureStore"
 
 // -------------------------------------------------- //
 // Props
@@ -23,27 +28,33 @@ export function Layout(props: LayoutProps) {
   // Theme
   const theme = useMantineTheme()
 
-  // State
-  const [open, setOpen] = useState(false)
+  // Store
+  const { menuOpen, setMenuOpen } = useFixtureStore()
 
   return (
     <>
       <Box className={classes.menu}>
-        <ActionIcon
-          onClick={() => setOpen(!open)}
+        <Paper
           radius="xl"
-          size="xl"
-          variant="default"
+          p="xs"
+          withBorder
+          w="44px"
+          h="44px"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Burger
-            opened={open}
-            onClick={() => {}}
+            onClick={() => setMenuOpen(!menuOpen)}
+            opened={menuOpen}
             aria-label="Toggle navigation"
             size="sm"
           />
-        </ActionIcon>
+        </Paper>
       </Box>
-      <Box className={cx(classes.wrapper, open && classes.open)}>
+      <Box className={cx(classes.wrapper, menuOpen && classes.open)}>
         <Menu />
         {children}
       </Box>
